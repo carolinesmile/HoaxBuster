@@ -1,34 +1,36 @@
-/*
-document.getElementById("submitBtn").addEventListener("click", () => {
+document.getElementById("newsInput").addEventListener("input", () => {
   const input = document.getElementById("newsInput").value;
-
-  // Simulated response (until your API is ready)
-  setTimeout(() => {
-    document.getElementById("result").innerText =
-      "Submission ID: mock-12345";
-  }, 1000);
+  const wordCount = input.trim() ? input.trim().split(/\s+/).length : 0;
+  document.getElementById("wordCount").innerText = `${wordCount}/250 words`;
+  if (wordCount > 250) {
+    document.getElementById("wordCount").style.color = "red";
+  } else {
+    document.getElementById("wordCount").style.color = "#666";
+  }
 });
-*/
 
 document.getElementById("submitBtn").addEventListener("click", async () => {
-  const input = document.getElementById("newsInput").value;
+  const input = document.getElementById("newsInput").value.trim();
   const resultDiv = document.getElementById("result");
 
-  // Placeholder for your API key
-  const API_KEY = "tiYbk6fnENavq3qwqIM9U5yDHnkNkNnm6zX63OZL"; // Replace when available
+  if (!input) {
+    resultDiv.innerText = "Please enter a statement or URL.";
+    return;
+  }
+  const wordCount = input.split(/\s+/).length;
+  if (wordCount > 250) {
+    resultDiv.innerText = "Input exceeds 250 words. Please shorten it.";
+    return;
+  }
 
-  // Placeholder for your API endpoint
-  const API_ENDPOINT = "https://oxfcb18s01.execute-api.ap-southeast-1.amazonaws.com/detect"; // Replace with actual endpoint
-
-  // Show loading message
-  resultDiv.innerText = "Analyzing... 🔍";
+  resultDiv.innerHTML = '<span class="spinner"></span> Analyzing...';
 
   try {
-    const response = await fetch(API_ENDPOINT, {
+    const response = await fetch("https://oxfcb18s01.execute-api.ap-southeast-1.amazonaws.com/detect", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": API_KEY // Include if your API uses API Gateway key
+        "x-api-key": "tiYbk6fnENavq3qwqIM9U5yDHnkNkNnm6zX63OZL"
       },
       body: JSON.stringify({ input })
     });
@@ -38,18 +40,34 @@ document.getElementById("submitBtn").addEventListener("click", async () => {
     }
 
     const data = await response.json();
-
-    // Display result (customize based on your API response structure)
+    const icons = {
+      "True": "✅",
+      "Misleading": "⚠️",
+      "False": "❌",
+      "Opinion/Commentary": "❓",
+      "Cannot Determine": "❓"
+    };
     resultDiv.innerHTML = `
-      <p><strong>Classification:</strong> ${data.classification}</p>
-      <p><strong>Correction:</strong> ${data.corrected_info || "N/A"}</p>
-      <p><strong>Sources:</strong></p>
-      <ul>
-        ${data.sources.map(src => `<li><a href="${src}" target="_blank">${src}</a></li>`).join("")}
-      </ul>
+      <div class="result-card result-${data.verdict.toLowerCase().replace("/", "-")}">
+        <p><strong>Classification:</strong> ${icons[data.verdict]} ${data.verdict}</p>
+        <p><strong>Explanation:</strong> ${data.explanation || "N/A"}</p>
+        ${data.ai_insights?.key_facts ? `<p><strong>Key Facts:</strong> ${data.ai_insights.key_facts.join(", ")}</p>` : ""}
+        ${data.ai_insights?.red_flags ? `<p><strong>Red Flags:</strong> ${data.ai_insights.red_flags.join(", ")}</p>` : ""}
+        ${data.ai_insights?.confidence ? `<p><strong>Confidence:</strong> ${data.ai_insights.confidence}</p>` : ""}
+        <p><strong>ClaimBuster Score:</strong> ${data.claim_score || "N/A"}</p>
+        <p><strong>Method:</strong> ${data.method}</p>
+        <p><strong>Cost:</strong> ${data.cost}</p>
+      </div>
     `;
   } catch (error) {
-    resultDiv.innerText = "Error analyzing statement. Please try again later.";
+    resultDiv.innerText = "Error analyzing statement. Please try again.";
     console.error("API Error:", error);
   }
+});
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+  document.getElementById("newsInput").value = "";
+  document.getElementById("result").innerHTML = "";
+  document.getElementById("wordCount").innerText = "0/250 words";
+  document.getElementById("wordCount").style.color = "#666";
 });
