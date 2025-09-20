@@ -1,18 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>HoaxBuster</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <h1>HoaxBuster 🕵️‍♂️</h1>
-    <p>Paste a news link or text below to analyze its credibility:</p>
-    <textarea id="newsInput" placeholder="Enter short text or URL..."></textarea>
-    <button id="submitBtn">Analyze</button>
-    <div id="result"></div>
+<div class="container">
+  <h1>HoaxBuster 🕵️‍♂️</h1>
+  <p>Paste a news link or text below to analyze its credibility:</p>
+  <div class="input-container">
+    <textarea id="newsInput" aria-label="Enter news text or URL for analysis" placeholder="Enter short text or URL..." maxlength="1500"></textarea>
+    <p id="wordCount">0/250 words</p>
   </div>
-  <script src="script.js"></script>
-</body>
-</html>
+  <button id="submitBtn" aria-label="Analyze input for credibility">Analyze</button>
+  <button id="clearBtn">Clear</button>
+  <div id="result" role="region" aria-live="polite"></div>
+</div>
